@@ -1,25 +1,24 @@
 pipeline {
     agent any
     tools {
-        maven 'Maven3'
+        maven 'Maven 3.9.11'
     }
 
     environment {
-     PATH = "C:\\Program Files\\Docker\\Docker\\resources\\bin;${env.PATH}"
-           JAVA_HOME = 'C:\\Program Files\\Java\\jdk-21'  // Adjust to your actual JDK pat
+        PATH = "/usr/local/bin:${env.PATH}"
+        JAVA_HOME = "/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home"
         SONARQUBE_SERVER = 'SonarQubeServer'  // The name of the SonarQube server configured in Jenkins
-        SONAR_TOKEN = 'sqa_4a9cd5ae8e65c1d8a59395010075d01f8b60170e' // Store the token securely
-        DOCKERHUB_CREDENTIALS_ID = 'Docker_Hub'
-        DOCKERHUB_REPO = 'amirdirin/sep2_week5_f2025_inclass'
+        SONAR_TOKEN = 'sqa_872af17eef7a4ae4a7f116ab8fad6652cb4bc888' // Store the token securely
+        DOCKERHUB_CREDENTIALS_ID = 'docker_hub'
+        DOCKERHUB_REPO = 'ristler/sep2_week5'
         DOCKER_IMAGE_TAG = 'latest'
-
 
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'master', url: 'https://github.com/ADirin/sep2_week5_inclass_s2.git'
+                git branch: 'master', url: 'https://github.com/Ristler/otp2week5.git'
             }
         }
 
