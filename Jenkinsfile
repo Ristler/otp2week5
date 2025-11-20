@@ -24,15 +24,27 @@ pipeline {
 
         stage('Build') {
             steps {
-                bat 'mvn clean install'
+                sh 'mvn clean install'
             }
         }
-
         stage('SonarQube Analysis') {
-                    steps {
-                        withSonarQubeEnv('SonarQubeServer') {
+            steps {
+                withSonarQubeEnv('SonarQubeServer') {
+                    script {
+                        def scanner = tool 'SonarScanner'
+                        if (isUnix()) {
+                            sh """
+                                ${scanner}/bin/sonar-scanner \
+                                -Dsonar.projectKey=devops-demo \
+                                -Dsonar.sources=src \
+                                -Dsonar.projectName=DevOps-Demo \
+                                -Dsonar.host.url=http://localhost:9000 \
+                                -Dsonar.login=${env.SONAR_TOKEN} \
+                                -Dsonar.java.binaries=target/classes
+                            """
+                        } else {
                             bat """
-                                ${tool 'SonarScanner'}\\bin\\sonar-scanner ^
+                                ${scanner}\\bin\\sonar-scanner ^
                                 -Dsonar.projectKey=devops-demo ^
                                 -Dsonar.sources=src ^
                                 -Dsonar.projectName=DevOps-Demo ^
@@ -43,6 +55,8 @@ pipeline {
                         }
                     }
                 }
+            }
+        }
 
 
 
