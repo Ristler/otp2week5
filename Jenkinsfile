@@ -60,23 +60,26 @@ pipeline {
 
 
 
-   stage('Build Docker Image') {
-            steps {
-                script {
-                    sh "${DOCKER_CLI} build -t ${DOCKERHUB_REPO}:${DOCKER_IMAGE_TAG} ."
-                }
-            }
-        }
+          stage('Docker Login') {
+                      steps {
+                          script {
+                              withCredentials([usernamePassword(credentialsId: DOCKERHUB_CREDENTIALS_ID, usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                                  sh "${DOCKER_CLI} login -u $DOCKER_USER -p $DOCKER_PASS"
+                              }
+                          }
+                      }
+                  }
 
-        stage('Push Docker Image to Docker Hub') {
-            steps {
-                script {
-                    withCredentials([usernamePassword(credentialsId: DOCKERHUB_CREDENTIALS_ID, usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                        sh "${DOCKER_CLI} login -u $DOCKER_USER -p $DOCKER_PASS"
-                    }
-                    sh "${DOCKER_CLI} push ${DOCKERHUB_REPO}:${DOCKER_IMAGE_TAG}"
-                }
-            }
-        }
-    }
-}
+          stage('Build Docker Image') {
+              steps {
+                  sh "${DOCKER_CLI} build -t ${DOCKERHUB_REPO}:${DOCKER_IMAGE_TAG} ."
+              }
+          }
+
+          stage('Push Docker Image to Docker Hub') {
+              steps {
+                  sh "${DOCKER_CLI} push ${DOCKERHUB_REPO}:${DOCKER_IMAGE_TAG}"
+              }
+          }
+      }
+  }
