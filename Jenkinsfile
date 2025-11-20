@@ -5,7 +5,7 @@ pipeline {
     }
 
     environment {
-        DOCKER_CLI = "/Applications/Docker.app/Contents/Resources/bin/docker"
+        PATH = "/Applications/Docker.app/Contents/Resources/bin:${env.PATH}"
         JAVA_HOME = "/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home"
         SONARQUBE_SERVER = 'SonarQubeServer'  // The name of the SonarQube server configured in Jenkins
         SONAR_TOKEN = 'sqa_872af17eef7a4ae4a7f116ab8fad6652cb4bc888' // Store the token securely
@@ -60,26 +60,26 @@ pipeline {
 
 
 
-          stage('Docker Login') {
-                      steps {
-                          script {
-                              withCredentials([usernamePassword(credentialsId: DOCKERHUB_CREDENTIALS_ID, usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                                  sh "${DOCKER_CLI} login -u $DOCKER_USER -p $DOCKER_PASS"
-                              }
-                          }
-                      }
-                  }
+   stage('Build Docker Image') {
+       steps {
+           script {
+               withEnv(["PATH=/Applications/Docker.app/Contents/Resources/bin:${env.PATH}"]) {
+                   docker.build("${DOCKERHUB_REPO}:${DOCKER_IMAGE_TAG}")
+               }
+           }
+       }
+   }
 
-          stage('Build Docker Image') {
-              steps {
-                  sh "${DOCKER_CLI} build -t ${DOCKERHUB_REPO}:${DOCKER_IMAGE_TAG} ."
-              }
-          }
-
-          stage('Push Docker Image to Docker Hub') {
-              steps {
-                  sh "${DOCKER_CLI} push ${DOCKERHUB_REPO}:${DOCKER_IMAGE_TAG}"
-              }
-          }
-      }
-  }
+   stage('Push Docker Image to Docker Hub') {
+       steps {
+           script {
+               withEnv(["PATH=/Applications/Docker.app/Contents/Resources/bin:${env.PATH}"]) {
+                   docker.withRegistry('https://index.docker.io/v1/', DOCKERHUB_CREDENTIALS_ID) {
+                       docker.image("${DOCKERHUB_REPO}:${DOCKER_IMAGE_TAG}").push()
+                   }
+               }
+           }
+       }
+    }
+}
+}
