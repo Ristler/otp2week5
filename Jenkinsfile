@@ -73,11 +73,12 @@ pipeline {
                 stage('Push Docker Image to Docker Hub') {
                     steps {
                         script {
-                            docker.withRegistry('https://index.docker.io/v1/', DOCKERHUB_CREDENTIALS_ID) {
-                                docker.image("${DOCKERHUB_REPO}:${DOCKER_IMAGE_TAG}").push()
+                            withEnv(["PATH=/Applications/Docker.app/Contents/Resources/bin:${env.PATH}"]) {
+                                docker.withRegistry('https://index.docker.io/v1/', DOCKERHUB_CREDENTIALS_ID) {
+                                    docker.image("${DOCKERHUB_REPO}:${DOCKER_IMAGE_TAG}").push()
+                                }
                             }
                         }
                     }
                 }
-    }
 }
