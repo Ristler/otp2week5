@@ -5,6 +5,7 @@ pipeline {
     }
 
     environment {
+        PATH = "/Applications/Docker.app/Contents/Resources/bin:${env.PATH}"
         JAVA_HOME = "/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home"
         SONARQUBE_SERVER = 'SonarQubeServer'  // The name of the SonarQube server configured in Jenkins
         SONAR_TOKEN = 'sqa_872af17eef7a4ae4a7f116ab8fad6652cb4bc888' // Store the token securely
@@ -62,7 +63,8 @@ pipeline {
    stage('Build Docker Image') {
        steps {
            script {
-               sh "/Applications/Docker.app/Contents/Resources/bin/docker build -t ${DOCKERHUB_REPO}:${DOCKER_IMAGE_TAG} ."
+                   docker.build("${DOCKERHUB_REPO}:${DOCKER_IMAGE_TAG}")
+               }
            }
        }
    }
@@ -70,9 +72,10 @@ pipeline {
    stage('Push Docker Image to Docker Hub') {
        steps {
            script {
-               withCredentials([usernamePassword(credentialsId: DOCKERHUB_CREDENTIALS_ID, usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                   sh "/Applications/Docker.app/Contents/Resources/bin/docker login -u $DOCKER_USER -p $DOCKER_PASS"
+                   docker.withRegistry('https://index.docker.io/v1/', DOCKERHUB_CREDENTIALS_ID) {
+                       docker.image("${DOCKERHUB_REPO}:${DOCKER_IMAGE_TAG}").push()
+                   }
                }
-               sh "/Applications/Docker.app/Contents/Resources/bin/docker push ${DOCKERHUB_REPO}:${DOCKER_IMAGE_TAG}"
            }
-       }}}}
+       }
+    }
